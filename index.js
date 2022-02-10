@@ -61,13 +61,11 @@ async function mergeLocales(
     return oldFiles.map((fileData) => {
       const { file: fileName, content: oldContent } = fileData;
       const { content: newContent } = findFile(fileName);
-      // const oldContentEntr = Object.entries(oldContent);
-      // const resContent = DeepMapObject(oldContent, ([category, oldCatData]) => {
       const resData = deepObjectMap(
         oldContent,
         (oldValue, newValue) => {
           const resValue = resolve(oldValue, newValue);
-          if (newValue !== oldValue && !/[a-z]/i.test(oldValue))
+          if (newValue !== oldValue)
             console.log({fileName, oldValue, newValue, resValue });
           return resValue;
         },
@@ -88,8 +86,8 @@ async function mergeLocales(
 async function parseLocales(source, target) {
   if (!source || !target) throw new Error("Not enough parameters provided!");
   const dirToCountryData = async (name, path) => {
-    const filterJson = (fileName) => /.json$/i.test(fileName);
-    const files = (await readdir(path)).filter(filterJson);
+    const jsonFilter = (fileName) => /.json$/i.test(fileName);
+    const files = (await readdir(path)).filter(jsonFilter);
     const filePaths = files.map((f) => `${path}/${f}`);
     const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
     const fileContents = buffors.map((b) => JSON.parse(b.toString("utf8")));
@@ -103,7 +101,6 @@ async function parseLocales(source, target) {
     return {
       country: name,
       data,
-      // content: { files: files, paths: filePaths, fileContent },
     };
   };
   const [oldFiles, newFiles] = await Promise.all([
