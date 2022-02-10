@@ -1,10 +1,9 @@
-const { readdir, readFile, mkdir, stat, writeFile } = require("fs/promises");
+const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
 
 const sourceParam = `./${process.argv[2] || "locales"}/`;
 const targetParam = `./${process.argv[3] || "targetLocales"}/`;
 const resultParam = `./${process.argv[4] || "resultLocales"}/`;
 main();
-// saveLocales(resultParam);
 
 function defaultResolve(oldValue, newValue) {
   let result = newValue;
@@ -18,6 +17,7 @@ async function main() {
     targetParam
   );
   const newData = await mergeLocales(oldCountries, newCountries);
+
   saveLocales(newData, resultParam);
 }
 
@@ -30,8 +30,8 @@ async function mergeLocales(
     const { country, data: oldData } = countryData;
     const newData = getNewCountryData(country)?.data;
     let result = countryData;
+
     if (newData) {
-      const { file, path } = oldData;
       const mergedData = mergeDatas(oldData, newData);
       result = { ...countryData, data: mergedData };
     }
@@ -67,13 +67,13 @@ async function mergeLocales(
         oldContent,
         (oldValue, newValue) => {
           const resValue = resolve(oldValue, newValue);
-          if (newValue !== oldValue)
-            console.log({ oldValue, newValue, resValue });
+          if (newValue !== oldValue && !/[a-z]/i.test(oldValue))
+            console.log({fileName, oldValue, newValue, resValue });
           return resValue;
         },
         newContent
       );
-      return { content: resData, ...fileData };
+      return {...fileData, content: resData };
     });
 
     function findFile(name, inNew = true) {
@@ -126,7 +126,7 @@ async function saveLocales(resCountries, destination) {
     await mkdir(dest, { recursive: true });
     data.forEach(({ file, content }) => {
       if (content !== undefined) {
-        const fileContent = JSON.stringify(content, null, 2);
+        const fileContent = JSON.stringify(content, null, '\t');
         writeFile(`${dest}/${file}`, fileContent);
       }
     });
