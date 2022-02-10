@@ -1,0 +1,56 @@
+{
+	"tabs": {
+		"friends": "الأصدقاء",
+		"squad": "الفرقة",
+		"recentplay": "لعبت مؤخرًا",
+		"regiment": "فوج عسكري",
+		"notifications": "إشعارات"
+	},
+	"errors": {
+		"fetchfriendslist": "خطأ في تنزيل قائمة الأصدقاء"
+	},
+	"notifications": {
+		"invitedyouto": "تمت دعوتك لـ",
+		"friends": "الأصدقاء",
+		"yearsago": "منذ سنوات",
+		"yearago": "منذ سنة",
+		"monthsago": "منذ شهور",
+		"monthago": "منذ شهر",
+		"daysago": "منذ أيام",
+		"dayago": "منذ يوم",
+		"hoursago": "منذ ساعات",
+		"hourago": "منذ ساعة",
+		"minutesago": "منذ دقائق",
+		"minuteago": "منذ دقيقة",
+		"youhavenewinvitation": "لديك طلب جديد",
+		"acceptedyourinvitationtofriends": "تم قبول طلب صداقتك",
+		"declinedyourinvitationtofriends": "تم رفض طلب صداقتك",
+		"expiresin": "ينتهي في",
+		"unread": "غير مقروء"
+	},
+	"squad": {
+		"squadleader": "قائد الفرقة",
+		"memberdetails": "تفاصيل أفراد الفرقة",
+		"emptyslot": "فتحة الفرقة فارغة",
+		"invitesomebody": "إرسال دعوة"
+	},
+	"friends": {
+		"unavailable": "غير متوفر",
+		"mainmenu": "القائمة الرئيسية",
+		"customize": "تخصيص",
+		"matchmaking": "تنظيم المباريات",
+		"partymatchmaking": "تنظيم مباريات الفرقة",
+		"connectingtoserver": "الاتصال بالخادم",
+		"loadingmap": "تحميل الخريطة",
+		"ingame": "داخل اللعبة",
+		"matchended": "انتهت المباراة",
+		"returningtomainmenu": "العودة إلى القائمة الرئيسية",
+		"1minuteago": "منذ دقيقة واحدة",
+		"minutesago": "منذ دقائق",
+		"hourago": "منذ ساعة",
+		"hoursago": "منذ ساعات",
+		"dayago": "منذ يوم",
+		"daysago": "منذ أيام",
+		"overyearago": "منذ أكثر من عام"
+	}
+}

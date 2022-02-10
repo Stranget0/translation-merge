@@ -1,0 +1,56 @@
+{
+	"tabs": {
+		"friends": "Arkadaşlar",
+		"squad": "Ekip",
+		"recentplay": "En Son Oynanan",
+		"regiment": "Alay",
+		"notifications": "Bildirimler"
+	},
+	"errors": {
+		"fetchfriendslist": "Arkadaş listesi indirilirken hata oluştu"
+	},
+	"notifications": {
+		"invitedyouto": "Seni şuna davet etti:",
+		"friends": "Arkadaşlar",
+		"yearsago": "yıl önce",
+		"yearago": "yıl önce",
+		"monthsago": "ay önce",
+		"monthago": "ay önce",
+		"daysago": "gün önce",
+		"dayago": "gün önce",
+		"hoursago": "saat önce",
+		"hourago": "saat önce",
+		"minutesago": "dakika önce",
+		"minuteago": "dakika önce",
+		"youhavenewinvitation": "",
+		"acceptedyourinvitationtofriends": "",
+		"declinedyourinvitationtofriends": "",
+		"expiresin": "Bitmesine kalan:",
+		"unread": "Okunmamış"
+	},
+	"squad": {
+		"squadleader": "Ekip lideri",
+		"memberdetails": "Ekip arkadaşı detayları",
+		"emptyslot": "Boş yuva",
+		"invitesomebody": "Davet et"
+	},
+	"friends": {
+		"unavailable": "Bulunamadı",
+		"mainmenu": "",
+		"customize": "",
+		"matchmaking": "",
+		"partymatchmaking": "",
+		"connectingtoserver": "",
+		"loadingmap": "",
+		"ingame": "",
+		"matchended": "",
+		"returningtomainmenu": "",
+		"1minuteago": "1 dakika önce",
+		"minutesago": "dakika önce",
+		"hourago": "saat önce",
+		"hoursago": "saat önce",
+		"dayago": "gün önce",
+		"daysago": "gün önce",
+		"overyearago": ""
+	}
+}

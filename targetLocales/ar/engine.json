@@ -1,0 +1,25 @@
+{
+	"layoutdefault": {
+		"partymemberlimitreached": "تم بلوغ الحد الأقصى لعدد أعضاء الجماعة.",
+		"youarenotapartyleader": "لستَ قائد جماعة.",
+		"youcantinvitemorethan5partymembers": "لا يمكنك دعوة أكثر من 5 أعضاء للجماعة",
+		"partyisfull": "الجماعة مكتملة.",
+		"leavethelobbytosendinvitations": "مغادرة ساحة الانتظار لإرسال الدعوات.",
+		"invitationsent": "تم إرسال الدعوة.",
+		"thisplayerhasjoinedyourparty": "{{0}} انضم إلى الجماعة.",
+		"thisplayerisnotloggedin": "{{0}} لم يسجل الدخول.",
+		"thisplayerhasdeclinedtheinvitation": "{{0}} رفض الدعوة.",
+		"thisplayerisinthematch": "{{0}} في المباراة.",
+		"matchmakinginprogresscantacceptinvitation": "تنظيم المباريات قيد التنفيذ، لا يمكن قبول الدعوة.",
+		"youwerekickedfromtheparty": "تم طردك من الجماعة.",
+		"youleftmatchmakingpartyinvitationcancelled": "غادرت تنظيم المباريات - تم إلغاء دعوة الجماعة.",
+		"networkconnectiontimeoutyouwereremovedfromtheparty": "انتهت مهلة الاتصال بالشبكة. تم إزالتك من الجماعة.",
+		"thisplayerisonline": "{{0}} متصل",
+		"thisplayerisoffline": "{{0}} غير متصل",
+		"thisfriendisalreadyinyourparty": "",
+		"noslotinpartyfor": "",
+		"notenoughplayersinthelobby": "",
+		"youarealreadyinthisparty": "أنت بالفعل في هذه الجماعة!",
+		"youarejoiningnowintothispartydontacceptinvitation": "أنت تنضم الآن إلى هذه الجماعة!"
+	}
+}

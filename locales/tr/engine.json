@@ -1,0 +1,26 @@
+{
+	"layoutdefault": {
+		"partymemberlimitreached": "",
+		"youarenotapartyleader": "",
+		"youcantinvitemorethan5partymembers": "",
+		"partyisfull": "",
+		"leavethelobbytosendinvitations": "",
+		"invitationsent": "",
+		"thisplayerhasjoinedyourparty": "",
+		"thisplayerisnotloggedin": "",
+		"thisplayerhasdeclinedtheinvitation": "",
+		"thisplayerisinthematch": "",
+		"matchmakinginprogresscantacceptinvitation": "",
+		"youwerekickedfromtheparty": "",
+		"youleftmatchmakingpartyinvitationcancelled": "",
+		"networkconnectiontimeoutyouwereremovedfromtheparty": "",
+		"thisplayerisonline": "",
+		"thisplayerisoffline": "",
+		"thisfriendisalreadyinyourparty": "",
+		"noslotinpartyfor": "",
+		"notenoughplayersinthelobby": "",
+        "youarealreadyinthisparty": "You are already in this party!",
+        "youarejoiningnowintothispartydontacceptinvitation": "You are joining now into this party!",
+        "partydisbanded": "Party disbanded!"
+	}
+}

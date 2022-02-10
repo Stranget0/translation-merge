@@ -1,0 +1,28 @@
+{
+	"tabs": {
+		"specialoffer": "Özel teklif",
+		"newarrivals": "Yeni gelenler",
+		"popular": "Popüler",
+		"weapons": "Silahlar",
+		"soldiers": "Askerler",
+		"strikes": "Savaş Destekleri",
+		"taunts": "Tahrikler",
+		"voiceovers": "Seslendirmeler",
+		"banners": "Sancaklar"
+	},
+	"label": {
+		"currency": "Para birimi",
+		"categoryname": "Kategori adı",
+		"dealofpremiumcurrency": "",
+		"bestchoice": "En iyi tercih",
+		"buy": "Satın al",
+		"buycurrency": "Para birimi satın al"
+	},
+	"notification": {
+		"downloaderror": "Dükkân verileri indirilirken hata oluştu",
+		"maintenance": "Dükkân bakımda",
+		"transactionerror": "İşlem hatası",
+		"transactionsuccess": "İşlem başarılı",
+		"inventoryupdated": "Envanter güncellendi"
+	}
+}

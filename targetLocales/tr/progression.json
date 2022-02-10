@@ -1,0 +1,66 @@
+{
+	"matchsummary": {
+		"level": "Seviye",
+		"levelup": "Seviye atladın!",
+		"levelinprogress": "",
+		"exp": "Tecrübe",
+		"masterystagetitle": "Ustalık seviyesi atladın!",
+		"itemsunlocked": "Açılan eşyalar"
+	},
+	"seasonalprogression": {
+		"completed": "Tamamlandı",
+		"seasonprogressup": "Sezonda ilerledin",
+		"currenttier": "Şimdiki kademe",
+		"weapon": "Silah",
+		"challenge": "Mücadele",
+		"achievement": "Başarım"
+	},
+	"battlepass": {
+		"noBattlepass": "Savaş Bileti şu anda mevcut değil.",
+		"rewardtypes": {
+			"bonuscontent": "Bonus içerik",
+			"free": "Ücretsiz"
+		},
+		"itemtypes": {
+			"currency": "Para birimi",
+			"itemskin": "Görünüm",
+			"attachment": "Eklenti",
+			"premiumaccount": "Premium Hesap",
+			"boosterreward": "Takviye",
+			"currencyreward": "Para birimi",
+			"bannerbackground": "Sancak arka planı",
+			"banneremblem": "Sancak arması",
+			"inventoryweapon": "Silah",
+			"strike": "Savaş desteği"
+		},
+		"rewarddetails": {
+			"free": "Savaş Bileti'ni aldıktan sonra bonus olarak açılır",
+			"progressable": "Savaş Bileti'yle şu kademede açılır:"
+		},
+		"buybutton": {
+			"title": "Savaş Bileti'ni satın al",
+			"subtitle": "Biletin sıfırlanması"
+		}
+	},
+	"customitems": {
+		"playerboost15minname": "Oyuncu TP takviyesi",
+		"playerboost15mindesc": "15 dakikalık oyuncu TP takviyesi",
+		"playerboost30minname": "Oyuncu TP takviyesi",
+		"playerboost30mindesc": "30 dakikalık oyuncu TP takviyesi",
+		"playerboost60minname": "Oyuncu TP takviyesi",
+		"playerboost60mindesc": "60 dakikalık oyuncu TP takviyesi",
+		"playerboost120minname": "Oyuncu TP takviyesi",
+		"playerboost120mindesc": "120 dakikalık oyuncu TP takviyesi",
+		"seasonboost15minname": "Sezon TP takviyesi",
+		"seasonboost15mindesc": "15 dakikalık sezon TP takviyesi",
+		"seasonboost30minname": "Sezon TP takviyesi",
+		"seasonboost30mindesc": "30 dakikalık sezon TP takviyesi",
+		"seasonboost60minname": "Sezon TP takviyesi",
+		"seasonboost60mindesc": "60 dakikalık sezon TP takviyesi",
+		"seasonboost120minname": "Sezon TP takviyesi",
+		"seasonboost120mindesc": "120 dakikalık sezon TP takviyesi",
+		"currencyname": "Para birimi",
+		"currencydesc": "Ucuz para birimi",
+		"boostername": "Takviye"
+	}
+}

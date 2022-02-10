@@ -1,0 +1,25 @@
+{
+	"layoutdefault": {
+		"partymemberlimitreached": "",
+		"youarenotapartyleader": "",
+		"youcantinvitemorethan5partymembers": "",
+		"partyisfull": "",
+		"leavethelobbytosendinvitations": "",
+		"invitationsent": "",
+		"thisplayerhasjoinedyourparty": "",
+		"thisplayerisnotloggedin": "",
+		"thisplayerhasdeclinedtheinvitation": "",
+		"thisplayerisinthematch": "",
+		"matchmakinginprogresscantacceptinvitation": "",
+		"youwerekickedfromtheparty": "",
+		"youleftmatchmakingpartyinvitationcancelled": "",
+		"networkconnectiontimeoutyouwereremovedfromtheparty": "",
+		"thisplayerisonline": "",
+		"thisplayerisoffline": "",
+		"thisfriendisalreadyinyourparty": "",
+		"noslotinpartyfor": "",
+		"notenoughplayersinthelobby": "",
+		"youarealreadyinthisparty": "Zaten bu gruptasın!",
+		"youarejoiningnowintothispartydontacceptinvitation": "Şu anda bu gruba katılıyorsun!"
+	}
+}
