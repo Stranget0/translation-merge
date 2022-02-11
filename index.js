@@ -65,13 +65,11 @@ async function mergeLocales(
         oldContent,
         (oldValue, newValue) => {
           const resValue = resolve(oldValue, newValue);
-          if (newValue !== oldValue)
-            console.log({fileName, oldValue, newValue, resValue });
           return resValue;
         },
         newContent
       );
-      return {...fileData, content: resData };
+      return { ...fileData, content: resData };
     });
 
     function findFile(name, inNew = true) {
@@ -123,16 +121,19 @@ async function saveLocales(resCountries, destination) {
     await mkdir(dest, { recursive: true });
     data.forEach(({ file, content }) => {
       if (content !== undefined) {
-        const fileContent = JSON.stringify(content, null, '\t');
+        const fileContent = JSON.stringify(content, null, "\t");
         writeFile(`${dest}/${file}`, fileContent);
       }
     });
   });
 }
-
 function deepObjectMap(obj, mapFunc, extraCompareObject) {
   if (typeof obj === "object") {
     const entries = Object.entries(obj);
+    const extraEntries = Object.entries(extraCompareObject).filter(
+      ([newKey]) => !entries.some(([key]) => newKey === key)
+    );
+    if (extraEntries.length) console.warn("skipped extra entries!", extraEntries);
     const newEntries = entries.map(([key, value]) => {
       const newValue = deepObjectMap(value, mapFunc, extraCompareObject?.[key]);
       return [key, newValue];
