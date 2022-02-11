@@ -59,12 +59,16 @@ async function mergeLocales(
   }
   function mergeDatas(oldFiles, newFiles) {
     return oldFiles.map((fileData) => {
-      const { file: fileName, content: oldContent } = fileData;
+      const { file: fileName, content: oldContent, path: filePath } = fileData;
       const { content: newContent } = findFile(fileName);
       const resData = deepObjectMap(
         oldContent,
         (oldValue, newValue) => {
           const resValue = resolve(oldValue, newValue);
+
+          if (oldValue !== newValue)
+            console.log({ oldValue, newValue, result: resValue, filePath });
+
           return resValue;
         },
         newContent
@@ -133,7 +137,8 @@ function deepObjectMap(obj, mapFunc, extraCompareObject) {
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
-    if (extraEntries.length) console.warn("skipped extra entries!", extraEntries);
+    if (extraEntries.length)
+      console.warn("skipped extra entries!", extraEntries);
     const newEntries = entries.map(([key, value]) => {
       const newValue = deepObjectMap(value, mapFunc, extraCompareObject?.[key]);
       return [key, newValue];
