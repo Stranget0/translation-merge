@@ -3,6 +3,7 @@ const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
 const sourceParam = `./${process.argv[2] || "locales"}/`;
 const targetParam = `./${process.argv[3] || "targetLocales"}/`;
 const resultParam = `./${process.argv[4] || "resultLocales"}/`;
+const { displayLog, queueLog } = makeLogger();
 main();
 
 function defaultResolve(oldValue, newValue) {
@@ -18,7 +19,8 @@ async function main() {
   );
   const newData = await mergeLocales(oldCountries, newCountries);
 
-  saveLocales(newData, resultParam);
+  await saveLocales(newData, resultParam);
+  displayLog();
 }
 
 async function mergeLocales(
@@ -137,8 +139,9 @@ function deepObjectMap(obj, mapFunc, extraCompareObject) {
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
-    if (extraEntries.length)
-      console.warn("skipped extra entries!", extraEntries);
+    if (extraEntries.length) {
+      queueLog({ "skipped extra entries!": extraEntries });
+    }
     const newEntries = entries.map(([key, value]) => {
       const newValue = deepObjectMap(value, mapFunc, extraCompareObject?.[key]);
       return [key, newValue];
@@ -146,6 +149,15 @@ function deepObjectMap(obj, mapFunc, extraCompareObject) {
     return Object.fromEntries(newEntries);
   }
   return mapFunc(obj, extraCompareObject);
+}
+
+function makeLogger() {
+  const logArray = [];
+  const queueLog = (item) => {
+    if (!logArray.includes(item)) logArray.push(item);
+  };
+  const displayLog = () => logArray.forEach((item) => console.log(item));
+  return { queueLog, displayLog };
 }
 
 class NotFoundError extends Error {
