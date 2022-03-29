@@ -128,9 +128,9 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
 
           if (oldValue !== resValue)
             console.log({
-              oldValue,
-              newValue,
-              result: resValue,
+              oldValue: stringify(oldValue),
+              newValue: stringify(newValue),
+              result: stringify(resValue),
               key,
               filePath,
             });
@@ -202,6 +202,10 @@ function makeLogger() {
   return { queueLog, displayLog };
 }
 
+function stringify(value) {
+  if (typeof value !== "object") return value;
+  return JSON.stringify(value, null, 2);
+}
 class NotFoundError extends Error {
   value;
   constructor(value, type) {
