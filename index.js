@@ -16,7 +16,7 @@ const changeLog = (
   country,
   fileData
 ) => {
-  console.log(`\t\t${oldValue} | ${comparerValue} => ${resValue}\n\n`);
+  console.log(`\t\t${key}: ${oldValue} | ${comparerValue} => ${resValue}\n\n`);
 };
 
 const resolvers = {
@@ -125,16 +125,9 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
   }
   function mergeDatas(oldFiles, newFiles) {
     const { country } = oldFiles;
-    console.log(`\n${country}`);
+    const logSingleCountry = logSingleF();
     return oldFiles.data.map((fileData) => {
-      let logged = false;
-      function logFileSingle() {
-        if (!logged) {
-          logged = true;
-          console.log(`\t${fileData.file}`);
-        }
-      }
-
+      const logSingleFile = logSingleF();
       const { file: fileName, content: oldContent, path: oldPath } = fileData;
       const { content: newContent, path: newPath } = findFile(fileName);
       const resData = deepObjectMap(
@@ -143,16 +136,10 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
           const resValue = resolve(oldValue, newValue);
 
           if (oldValue !== resValue) {
-            logFileSingle();
+            logSingleCountry(country);
+            logSingleFile(`\t${fileName}`);
             changeLog(oldValue, newValue, resValue, key, country, fileData);
           }
-          // console.log(`${oldValue} | ${newValue} => ${resValue}`,{
-          //   oldValue: stringify(oldValue),
-          //   newValue: stringify(newValue),
-          //   result: stringify(resValue),
-          //   key,
-          //   filePath: oldPath,
-          // });
 
           return resValue;
         },
@@ -220,7 +207,15 @@ function makeLogger() {
   const displayLog = () => logArray.forEach((item) => console.log(item));
   return { queueLog, displayLog };
 }
-
+function logSingleF() {
+  let logged = false;
+  return (value) => {
+    if (!logged) {
+      logged = true;
+      console.log(value);
+    }
+  };
+}
 function stringify(value) {
   if (typeof value !== "object") return value;
   return JSON.stringify(value, null, 2);
