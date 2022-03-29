@@ -6,33 +6,44 @@ const resultParam = `./${process.argv[4] || "resultLocales"}/`;
 const { displayLog, queueLog } = makeLogger();
 main();
 
-function defaultResolve(oldValue, newValue) {
-  let result = newValue;
-  if (!newValue) result = oldValue;
-  return result;
-}
+const newSingleMasterCountries = true;
+
+let cOldPath = null,
+  cNewPath = null;
+
+const resolvers = {
+  mergeResolve(oldValue, newValue) {
+    let result = newValue;
+    if (!newValue) result = oldValue;
+    return result;
+  },
+  addResolve(oldValue, newValue) {
+    if (oldValue === undefined && newValue !== undefined) return newValue;
+    return oldValue;
+  },
+};
 
 async function main() {
   const { oldCountries, newCountries } = await parseLocales(
     sourceParam,
     targetParam
   );
-  const newData = await mergeLocales(oldCountries, newCountries);
+  const newData = await mergeLocales(
+    oldCountries,
+    newCountries,
+    resolvers.addResolve
+  );
 
   await saveLocales(newData, resultParam);
   displayLog();
 }
 
-async function mergeLocales(
-  oldCountries,
-  newCountries,
-  resolve = defaultResolve
-) {
+async function mergeLocales(oldCountries, newCountries, resolve) {
   const resData = oldCountries.map((countryData) => {
     const { country, data: oldData } = countryData;
+    console.log(country);
     const newData = getNewCountryData(country)?.data;
     let result = countryData;
-
     if (newData) {
       const mergedData = mergeDatas(oldData, newData);
       result = { ...countryData, data: mergedData };
@@ -42,9 +53,12 @@ async function mergeLocales(
   return resData;
 
   function getCountryData(country, countries) {
-    const countryData = countries.find(
-      ({ country: _country }) => country === _country
+    const countryData = countries.find(({ country: _country }) =>
+      newSingleMasterCountries
+        ? _country.toLowerCase() === "us"
+        : country === _country
     );
+    // if (countryData) countryData.country = country;
     if (!countryData) throw new NotFoundError(country, "country");
     return countryData;
   }
@@ -62,13 +76,15 @@ async function mergeLocales(
   function mergeDatas(oldFiles, newFiles) {
     return oldFiles.map((fileData) => {
       const { file: fileName, content: oldContent, path: filePath } = fileData;
-      const { content: newContent } = findFile(fileName);
+      const { content: newContent, path: newPath } = findFile(fileName);
+      cOldPath = filePath;
+      cNewPath = newPath;
       const resData = deepObjectMap(
         oldContent,
         (oldValue, newValue) => {
           const resValue = resolve(oldValue, newValue);
 
-          if (oldValue !== newValue)
+          if (oldValue !== resValue)
             console.log({ oldValue, newValue, result: resValue, filePath });
 
           return resValue;
@@ -107,12 +123,14 @@ async function parseLocales(source, target) {
       data,
     };
   };
+  const makeLangObj = (path, files) =>
+    Promise.all(files.map((d) => dirToCountryData(d, path + d)));
+
+  if (!source || !target) throw new Error("Not enough parameters provided!");
   const [oldFiles, newFiles] = await Promise.all([
     readdir(source),
     readdir(target),
   ]);
-  const makeLangObj = (path, files) =>
-    Promise.all(files.map((d) => dirToCountryData(d, path + d)));
 
   const [oldContent, newContent] = await Promise.all([
     makeLangObj(source, oldFiles),
@@ -120,13 +138,14 @@ async function parseLocales(source, target) {
   ]);
   return { oldCountries: oldContent, newCountries: newContent };
 }
+
 async function saveLocales(resCountries, destination) {
   resCountries.forEach(async (countryData) => {
     const { country, data } = countryData;
     const dest = destination + country;
     await mkdir(dest, { recursive: true });
     data.forEach(({ file, content }) => {
-      if (content !== undefined) {
+			if (content !== undefined) {
         const fileContent = JSON.stringify(content, null, "\t");
         writeFile(`${dest}/${file}`, fileContent);
       }
@@ -135,15 +154,22 @@ async function saveLocales(resCountries, destination) {
 }
 function deepObjectMap(obj, mapFunc, extraCompareObject) {
   if (typeof obj === "object") {
+    if (!extraCompareObject) console.log(obj, extraCompareObject);
     const entries = Object.entries(obj);
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
     if (extraEntries.length) {
-      queueLog({ "skipped extra entries!": extraEntries });
+			console.log(`\t${cOldPath}`,"\n\t\t",Object.fromEntries(extraEntries));
+      // queueLog({ "added extra entries!": extraEntries });
     }
-    const newEntries = entries.map(([key, value]) => {
-      const newValue = deepObjectMap(value, mapFunc, extraCompareObject?.[key]);
+    const newEntries = [...entries, ...extraEntries].map(([key, value]) => {
+      const newValue = deepObjectMap(
+        value,
+        mapFunc,
+        extraCompareObject?.[key],
+        extraCompareObject
+      );
       return [key, newValue];
     });
     return Object.fromEntries(newEntries);
