@@ -6,7 +6,7 @@ const resultParam = `./${process.argv[4] || "resultLocales"}/`;
 const { displayLog, queueLog } = makeLogger();
 main();
 
-const newSingleMasterCountries = true;
+const masterCountry = "us";
 
 let cOldPath = null,
   cNewPath = null;
@@ -18,7 +18,9 @@ const resolvers = {
     return result;
   },
   addResolve(oldValue, newValue) {
-    if (oldValue === undefined && newValue !== undefined) return newValue;
+    if (!oldValue && newValue) {
+      return newValue;
+    }
     return oldValue;
   },
 };
@@ -96,9 +98,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
 
   function getCountryData(country, countries) {
     const countryData = countries.find(({ country: _country }) =>
-      newSingleMasterCountries
-        ? _country.toLowerCase() === "us"
-        : country === _country
+      masterCountry ? _country === masterCountry : country === _country
     );
     // if (countryData) countryData.country = country;
     if (!countryData) throw new NotFoundError(country, "country");
@@ -123,11 +123,17 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
       cNewPath = newPath;
       const resData = deepObjectMap(
         oldContent,
-        (oldValue, newValue) => {
+        (oldValue, newValue, key) => {
           const resValue = resolve(oldValue, newValue);
 
           if (oldValue !== resValue)
-            console.log({ oldValue, newValue, result: resValue, filePath });
+            console.log({
+              oldValue,
+              newValue,
+              result: resValue,
+              key,
+              filePath,
+            });
 
           return resValue;
         },
@@ -160,29 +166,31 @@ async function saveLocales(resCountries, destination) {
   });
 }
 
-function deepObjectMap(obj, mapFunc, extraCompareObject) {
+function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
   if (typeof obj === "object") {
     if (!extraCompareObject) console.log(obj, extraCompareObject);
     const entries = Object.entries(obj);
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
-    if (extraEntries.length) {
-      console.log(`\t${cOldPath}`, "\n\t\t", Object.fromEntries(extraEntries));
-      // queueLog({ "added extra entries!": extraEntries });
-    }
-    const newEntries = [...entries, ...extraEntries].map(([key, value]) => {
-      const newValue = deepObjectMap(
-        value,
-        mapFunc,
-        extraCompareObject?.[key],
-        extraCompareObject
-      );
-      return [key, newValue];
-    });
+    const mappedExtraEntries = extraEntries
+      .map(([key, value]) => mapFunc(null, value, key))
+      .filter((entry) => entry);
+
+    const newEntries = [...entries, ...mappedExtraEntries].map(
+      ([key, value]) => {
+        const newValue = deepObjectMap(
+          value,
+          mapFunc,
+          extraCompareObject[key],
+          key
+        );
+        return [key, newValue];
+      }
+    );
     return Object.fromEntries(newEntries);
   }
-  return mapFunc(obj, extraCompareObject);
+  return mapFunc(obj, extraCompareObject, objKey);
 }
 
 function makeLogger() {
