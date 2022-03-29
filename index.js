@@ -38,6 +38,48 @@ async function main() {
   displayLog();
 }
 
+async function parseLocales(source, target) {
+  if (!source || !target) throw new Error("Not enough parameters provided!");
+  const dirToCountryData = async (name, path) => {
+    const jsonFilter = (fileName) => /.json$/i.test(fileName);
+    const files = (await readdir(path)).filter(jsonFilter);
+    const filePaths = files.map((f) => `${path}/${f}`);
+    const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
+    const fileContents = buffors.map((b) => {
+      try {
+        return JSON.parse(b.toString("utf-8").trim());
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    const data = files.map((file, i) => ({
+      file,
+      path: filePaths[i],
+      content: fileContents[i],
+    }));
+
+    return {
+      country: name,
+      data,
+    };
+  };
+  const makeLangObj = (path, files) =>
+    Promise.all(files.map((d) => dirToCountryData(d, path + d)));
+
+  if (!source || !target) throw new Error("Not enough parameters provided!");
+  const [oldFiles, newFiles] = await Promise.all([
+    readdir(source),
+    readdir(target),
+  ]);
+
+  const [oldContent, newContent] = await Promise.all([
+    makeLangObj(source, oldFiles),
+    makeLangObj(target, newFiles),
+  ]);
+  return { oldCountries: oldContent, newCountries: newContent };
+}
+
 async function mergeLocales(oldCountries, newCountries, resolve) {
   const resData = oldCountries.map((countryData) => {
     const { country, data: oldData } = countryData;
@@ -103,41 +145,6 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
     }
   }
 }
-async function parseLocales(source, target) {
-  if (!source || !target) throw new Error("Not enough parameters provided!");
-  const dirToCountryData = async (name, path) => {
-    const jsonFilter = (fileName) => /.json$/i.test(fileName);
-    const files = (await readdir(path)).filter(jsonFilter);
-    const filePaths = files.map((f) => `${path}/${f}`);
-    const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
-    const fileContents = buffors.map((b) => JSON.parse(b.toString("utf8")));
-
-    const data = files.map((file, i) => ({
-      file,
-      path: filePaths[i],
-      content: fileContents[i],
-    }));
-
-    return {
-      country: name,
-      data,
-    };
-  };
-  const makeLangObj = (path, files) =>
-    Promise.all(files.map((d) => dirToCountryData(d, path + d)));
-
-  if (!source || !target) throw new Error("Not enough parameters provided!");
-  const [oldFiles, newFiles] = await Promise.all([
-    readdir(source),
-    readdir(target),
-  ]);
-
-  const [oldContent, newContent] = await Promise.all([
-    makeLangObj(source, oldFiles),
-    makeLangObj(target, newFiles),
-  ]);
-  return { oldCountries: oldContent, newCountries: newContent };
-}
 
 async function saveLocales(resCountries, destination) {
   resCountries.forEach(async (countryData) => {
@@ -145,13 +152,14 @@ async function saveLocales(resCountries, destination) {
     const dest = destination + country;
     await mkdir(dest, { recursive: true });
     data.forEach(({ file, content }) => {
-			if (content !== undefined) {
+      if (content !== undefined) {
         const fileContent = JSON.stringify(content, null, "\t");
         writeFile(`${dest}/${file}`, fileContent);
       }
     });
   });
 }
+
 function deepObjectMap(obj, mapFunc, extraCompareObject) {
   if (typeof obj === "object") {
     if (!extraCompareObject) console.log(obj, extraCompareObject);
@@ -160,7 +168,7 @@ function deepObjectMap(obj, mapFunc, extraCompareObject) {
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
     if (extraEntries.length) {
-			console.log(`\t${cOldPath}`,"\n\t\t",Object.fromEntries(extraEntries));
+      console.log(`\t${cOldPath}`, "\n\t\t", Object.fromEntries(extraEntries));
       // queueLog({ "added extra entries!": extraEntries });
     }
     const newEntries = [...entries, ...extraEntries].map(([key, value]) => {
