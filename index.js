@@ -8,8 +8,16 @@ main();
 
 const masterCountry = "us";
 
-let cOldPath = null,
-  cNewPath = null;
+const changeLog = (
+  oldValue,
+  comparerValue,
+  resValue,
+  key,
+  country,
+  fileData
+) => {
+  console.log(`\t\t${oldValue} | ${comparerValue} => ${resValue}\n\n`);
+};
 
 const resolvers = {
   mergeResolve(oldValue, newValue) {
@@ -83,14 +91,14 @@ async function parseLocales(source, target) {
 }
 
 async function mergeLocales(oldCountries, newCountries, resolve) {
-  const resData = oldCountries.map((countryData) => {
-    const { country, data: oldData } = countryData;
-    console.log(country);
-    const newData = getNewCountryData(country)?.data;
-    let result = countryData;
+  const resData = oldCountries.map((oldData) => {
+    // const { country, data: oldData } = countryData;
+    // console.log(country);
+    const newData = getNewCountryData(oldData.country);
+    let result = oldData;
     if (newData) {
       const mergedData = mergeDatas(oldData, newData);
-      result = { ...countryData, data: mergedData };
+      result = { ...oldData.data, data: mergedData };
     }
     return result;
   });
@@ -116,24 +124,35 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
     }
   }
   function mergeDatas(oldFiles, newFiles) {
-    return oldFiles.map((fileData) => {
-      const { file: fileName, content: oldContent, path: filePath } = fileData;
+    const { country } = oldFiles;
+    console.log(`\n${country}`);
+    return oldFiles.data.map((fileData) => {
+      let logged = false;
+      function logFileSingle() {
+        if (!logged) {
+          logged = true;
+          console.log(`\t${fileData.file}`);
+        }
+      }
+
+      const { file: fileName, content: oldContent, path: oldPath } = fileData;
       const { content: newContent, path: newPath } = findFile(fileName);
-      cOldPath = filePath;
-      cNewPath = newPath;
       const resData = deepObjectMap(
         oldContent,
         (oldValue, newValue, key) => {
           const resValue = resolve(oldValue, newValue);
 
-          if (oldValue !== resValue)
-            console.log({
-              oldValue: stringify(oldValue),
-              newValue: stringify(newValue),
-              result: stringify(resValue),
-              key,
-              filePath,
-            });
+          if (oldValue !== resValue) {
+            logFileSingle();
+            changeLog(oldValue, newValue, resValue, key, country, fileData);
+          }
+          // console.log(`${oldValue} | ${newValue} => ${resValue}`,{
+          //   oldValue: stringify(oldValue),
+          //   newValue: stringify(newValue),
+          //   result: stringify(resValue),
+          //   key,
+          //   filePath: oldPath,
+          // });
 
           return resValue;
         },
@@ -143,8 +162,8 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
     });
 
     function findFile(name, inNew = true) {
-      let arr = newFiles;
-      if (!inNew) arr = oldFiles;
+      let arr = newFiles.data;
+      if (!inNew) arr = oldFiles.data;
       const file = arr.find(({ file }) => file === name);
       if (!file) throw new NotFoundError(name, "file");
       return file;
