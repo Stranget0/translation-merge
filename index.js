@@ -26,10 +26,8 @@ const resolvers = {
     return result;
   },
   addResolve(oldValue, newValue) {
-    if (!oldValue && newValue) {
-      console.log({ newValue });
+    if (!oldValue && newValue) 
       return newValue;
-    }
     return oldValue;
   },
 };
