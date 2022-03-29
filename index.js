@@ -47,7 +47,7 @@ async function parseLocales(source, target) {
     const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
     const fileContents = buffors.map((b) => {
       try {
-        return JSON.parse(b.toString("utf-8").trim());
+        return JSON.parse(b.toString("utf8").trim());
       } catch (e) {
         console.log(e);
       }
