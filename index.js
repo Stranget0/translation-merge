@@ -27,6 +27,7 @@ const resolvers = {
   },
   addResolve(oldValue, newValue) {
     if (!oldValue && newValue) {
+      console.log({ newValue });
       return newValue;
     }
     return oldValue;
@@ -43,7 +44,6 @@ async function main() {
     newCountries,
     resolvers.addResolve
   );
-
   await saveLocales(newData, resultParam);
   displayLog();
 }
@@ -55,11 +55,11 @@ async function parseLocales(source, target) {
     const files = (await readdir(path)).filter(jsonFilter);
     const filePaths = files.map((f) => `${path}/${f}`);
     const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
-    const fileContents = buffors.map((b) => {
+    const fileContents = buffors.map((b, i) => {
       try {
         return JSON.parse(b.toString("utf8").trim());
       } catch (e) {
-        console.log(e);
+        console.log(filePaths[i], e, "\n\n");
       }
     });
 
@@ -92,16 +92,15 @@ async function parseLocales(source, target) {
 
 async function mergeLocales(oldCountries, newCountries, resolve) {
   const resData = oldCountries.map((oldData) => {
-    // const { country, data: oldData } = countryData;
-    // console.log(country);
     const newData = getNewCountryData(oldData.country);
     let result = oldData;
     if (newData) {
       const mergedData = mergeDatas(oldData, newData);
-      result = { ...oldData.data, data: mergedData };
+      result = { ...oldData, data: mergedData };
     }
     return result;
   });
+
   return resData;
 
   function getCountryData(country, countries) {
@@ -116,12 +115,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
     return getCountryData(country, oldCountries);
   }
   function getNewCountryData(country) {
-    try {
-      return getCountryData(country, newCountries);
-    } catch (e) {
-      if (e instanceof NotFoundError) return null;
-      throw e;
-    }
+    return getCountryData(country, newCountries);
   }
   function mergeDatas(oldFiles, newFiles) {
     const { country } = oldFiles;
@@ -146,6 +140,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
         newContent
       );
       return { ...fileData, content: resData };
+      // return { ...fileData, content: resData };
     });
 
     function findFile(name, inNew = true) {
@@ -174,13 +169,13 @@ async function saveLocales(resCountries, destination) {
 
 function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
   if (typeof obj === "object") {
-    if (!extraCompareObject) console.log(obj, extraCompareObject);
     const entries = Object.entries(obj);
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
+
     const mappedExtraEntries = extraEntries
-      .map(([key, value]) => mapFunc(null, value, key))
+      .map(([key, value]) => [key, mapFunc(null, value, key)])
       .filter((entry) => entry);
 
     const newEntries = [...entries, ...mappedExtraEntries].map(
@@ -188,7 +183,7 @@ function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
         const newValue = deepObjectMap(
           value,
           mapFunc,
-          extraCompareObject[key],
+          extraCompareObject?.[key],
           key
         );
         return [key, newValue];
