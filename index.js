@@ -16,18 +16,18 @@ const changeLog = (
   country,
   fileData
 ) => {
-  console.log(`\t\t${key}: ${oldValue} | ${comparerValue} => ${resValue}\n\n`);
+  console.log(`\t\t${key}: ${oldValue} | ${comparerValue} => ${resValue}\n`);
 };
 
 const resolvers = {
-  mergeResolve(oldValue, newValue) {
-    let result = newValue;
-    if (!newValue) result = oldValue;
+  mergeResolve(oldValue, comparerValue) {
+    let result = comparerValue;
+    if (!comparerValue) result = oldValue;
     return result;
   },
-  addResolve(oldValue, newValue) {
-    if (!oldValue && newValue) 
-      return newValue;
+  addResolve(oldValue, comparerValue) {
+    if (!oldValue && comparerValue) 
+      return comparerValue;
     return oldValue;
   },
 };
@@ -124,13 +124,13 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
       const { content: newContent, path: newPath } = findFile(fileName);
       const resData = deepObjectMap(
         oldContent,
-        (oldValue, newValue, key) => {
-          const resValue = resolve(oldValue, newValue);
+        (oldValue, comparerValue, key) => {
+          const resValue = resolve(oldValue, comparerValue);
 
           if (oldValue !== resValue) {
             logSingleCountry(country);
             logSingleFile(`\t${fileName}`);
-            changeLog(oldValue, newValue, resValue, key, country, fileData);
+            changeLog(oldValue, comparerValue, resValue, key, country, fileData);
           }
 
           return resValue;
