@@ -167,6 +167,7 @@ async function saveLocales(resCountries, destination) {
 
 function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
   if (typeof obj === "object") {
+		if(!extraCompareObject) return obj;
     const entries = Object.entries(obj);
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
