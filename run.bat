@@ -1,0 +1,1 @@
+node . "../ww3hub/src/assets/locales" "../ww3hub/src/assets/locales" "../ww3hub/src/assets/locales"

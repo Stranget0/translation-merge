@@ -1,4 +1,1 @@
-resultLocales/
-node_modules/
-*.rar
-locales*
+*locales*
