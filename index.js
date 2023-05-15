@@ -6,6 +6,8 @@ const resultParam = `./${process.argv[4] || "resultLocales"}/`;
 const { displayLog, queueLog } = makeLogger();
 main();
 
+let logValue = "";
+
 const resolvers = {
   mergeResolve(oldValue, comparerValue) {
     let result = comparerValue;
@@ -38,18 +40,12 @@ const sibsToSort = [
 ];
 
 // Logger
-const changeLog = (
-  oldValue,
-  comparerValue,
-  resValue,
-  key,
-  country,
-  fileData
-) => {
-  console.log(`\t\t${key}: ${oldValue} | ${comparerValue} => ${resValue}\n`);
+const changeLog = (oldValue, comparerValue, resValue, key, objPath) => {
+  logValue += `\t\t${objPath}: ${oldValue} | ${comparerValue} => ${resValue}\n`;
 };
+
 const trackedKeys = [];
-const fileNameReg = /databaseitems.json$/i;
+const fileNameReg = /.json$/i;
 //#endregion
 
 // BEGINNING OF ALGORITHM
@@ -62,10 +58,11 @@ async function main() {
     oldCountries,
     newCountries,
     // Change this to use a different resolver
-    resolvers.filterResolve
+    resolvers.addResolve
   );
   await saveLocales(newData, resultParam);
-  displayLog();
+  await writeFile("log.yaml", logValue);
+  // displayLog();
 }
 
 async function parseLocales(source, target) {
@@ -150,20 +147,12 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
       const { content: newContent, path: newPath } = findFile(fileName);
       const resData = deepObjectMap(
         oldContent,
-        (oldValue, comparerValue, key) => {
+        (oldValue, comparerValue, key, objPath) => {
           const resValue = resolve(oldValue, comparerValue);
-
           if (oldValue !== resValue || trackedKeys.includes(key)) {
             logSingleCountry(country);
             logSingleFile(`\t${fileName}`);
-            changeLog(
-              oldValue,
-              comparerValue,
-              resValue,
-              key,
-              country,
-              fileData
-            );
+            changeLog(oldValue, comparerValue, resValue, key, objPath);
           }
 
           return resValue;
@@ -197,10 +186,17 @@ async function saveLocales(resCountries, destination) {
   });
 }
 
-function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
+function deepObjectMap(
+  obj,
+  mapFunc,
+  extraCompareObject,
+  objKey = "",
+  objPath = ""
+) {
   function deleteNullish(entries) {
     return entries.filter(([, value]) => isNotNullish(value));
   }
+
   if (typeof obj === "object") {
     if (!extraCompareObject) return obj;
     const entries = Object.entries(obj);
@@ -208,7 +204,10 @@ function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
     const mappedExtraEntries = deleteNullish(
-      extraEntries.map(([key, value]) => [key, mapFunc(null, value, key)])
+      extraEntries.map(([key, value]) => [
+        key,
+        mapFunc(null, value, key, `${objPath}.${key}`),
+      ])
     );
 
     const newEntries = deleteNullish(
@@ -217,7 +216,8 @@ function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
           value,
           mapFunc,
           extraCompareObject?.[key],
-          key
+          key,
+          `${objPath}.${key}`
         );
         return [key, newValue];
       })
@@ -227,12 +227,11 @@ function deepObjectMap(obj, mapFunc, extraCompareObject, objKey) {
       newEntries.find(([key]) => sibsToSort.some((reg) => reg.test(key)))
     ) {
       newEntries.sort();
-      console.log(objKey, "SORTED");
     }
 
     return Object.fromEntries(newEntries);
   }
-  return mapFunc(obj, extraCompareObject, objKey);
+  return mapFunc(obj, extraCompareObject, objKey, objPath);
 }
 
 function makeLogger() {
@@ -243,15 +242,17 @@ function makeLogger() {
   const displayLog = () => logArray.forEach((item) => console.log(item));
   return { queueLog, displayLog };
 }
+
 function logSingleF() {
   let logged = false;
   return (value) => {
     if (!logged) {
       logged = true;
-      console.log(value);
+      logValue += value + "\n ";
     }
   };
 }
+
 function stringify(value) {
   if (typeof value !== "object") return value;
   return JSON.stringify(value, null, 2);
