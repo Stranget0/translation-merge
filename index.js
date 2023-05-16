@@ -1,12 +1,24 @@
 const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
+const cliProgress = require("cli-progress");
+const colors = require("ansi-colors");
 
 const sourceParam = `./${process.argv[2] || "locales"}/`;
 const targetParam = `./${process.argv[3] || "targetLocales"}/`;
 const resultParam = `./${process.argv[4] || "resultLocales"}/`;
 const { displayLog, queueLog } = makeLogger();
+
+const progress = new cliProgress.SingleBar({
+  format: colors.yellow(
+    "parsing {country} {fileName} [{bar}] {percentage}% | {value}/{total}"
+  ),
+  barCompleteChar: "\u2588",
+  barIncompleteChar: "\u2591",
+  hideCursor: true,
+});
 main();
 
 let logValue = "";
+let ignoreLog = false;
 
 const resolvers = {
   mergeResolve(oldValue, comparerValue) {
@@ -27,10 +39,18 @@ const resolvers = {
     if (isNotNullish(comparerValue)) return oldValue;
     return null;
   },
+  diffResolve(oldValue, comparerValue) {
+    if (comparerValue && comparerValue !== oldValue) return comparerValue;
+    return null;
+  },
+  combineResolve(oldValue, comparerValue) {
+    if (comparerValue) return comparerValue;
+    return oldValue;
+  },
 };
 
 // #region OPTIONS
-const masterCountry = "us";
+const masterCountry = null;
 
 const sibsToSort = [
   /challenge_/,
@@ -41,8 +61,19 @@ const sibsToSort = [
 
 // Logger
 const changeLog = (oldValue, comparerValue, resValue, key, objPath) => {
+  if (ignoreLog) return;
   logValue += `\t\t${objPath}: ${oldValue} | ${comparerValue} => ${resValue}\n`;
 };
+
+function logSingleF() {
+  let logged = false;
+  return (value) => {
+    if (!logged && !ignoreLog) {
+      logged = true;
+      logValue += value + "\n ";
+    }
+  };
+}
 
 const trackedKeys = [];
 const fileNameReg = /.json$/i;
@@ -50,7 +81,7 @@ const fileNameReg = /.json$/i;
 
 // BEGINNING OF ALGORITHM
 async function main() {
-  const { oldCountries, newCountries } = await parseLocales(
+  const { oldCountries, newCountries, filesCount } = await parseLocales(
     sourceParam,
     targetParam
   );
@@ -58,9 +89,11 @@ async function main() {
     oldCountries,
     newCountries,
     // Change this to use a different resolver
-    resolvers.addResolve
+    resolvers.combineResolve,
+    filesCount
   );
   await saveLocales(newData, resultParam);
+  console.log(logValue);
   await writeFile("log.yaml", logValue);
   // displayLog();
 }
@@ -104,32 +137,52 @@ async function parseLocales(source, target) {
     makeLangObj(source, oldFiles),
     makeLangObj(target, newFiles),
   ]);
-  return { oldCountries: oldContent, newCountries: newContent };
+
+  const filesCount = countFilesCount(oldContent);
+
+  return { oldCountries: oldContent, newCountries: newContent, filesCount };
+
+  function countFilesCount(countries) {
+    return countries.reduce((acc, { data }) => data.length + acc, 0);
+  }
 }
 
-async function mergeLocales(oldCountries, newCountries, resolve) {
-  const resData = oldCountries.map((oldData) => {
-    const newData = getNewCountryData(oldData.country);
-    let result = oldData;
-    if (newData) {
-      const mergedData = mergeDatas(oldData, newData);
-      result = { ...oldData, data: mergedData };
-    }
-    return result;
-  });
+async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
+  let usDiffMemo = null;
+  const isCombined = resolve === resolvers.combineResolve;
+  return transformCountries();
 
-  return resData;
+  function getUsDiff() {
+    if (usDiffMemo) return usDiffMemo;
+    ignoreLog = true;
+    const oldUs = getCountryData("us", oldCountries);
+    const newUs = getCountryData("us", newCountries);
+    if (!oldUs || !newUs) throw new Error("Couldn't find us locale");
+    const diffUs = mergeDatas(oldUs, newUs, resolvers.diffResolve);
+    usDiffMemo = diffUs;
+    ignoreLog = false;
+    return diffUs;
+  }
+
+  function transformCountries() {
+    progress.start(filesCount, 0, { country: "locales", fileName: "" });
+    const resData = oldCountries.map((oldData) => {
+      const newData = isCombined
+        ? { ...oldData, data: getUsDiff() }
+        : getNewCountryData(oldData.country);
+
+      if (!newData) return oldData;
+      const mergedData = mergeDatas(oldData, newData, resolve);
+      return { ...oldData, data: mergedData };
+    });
+    progress.stop();
+    return resData;
+  }
 
   function getCountryData(country, countries) {
     const countryData = countries.find(
-      ({ country: _country }) => _country === (masterCountry || country)
+      ({ country: _country }) => _country === country
     );
-    if (!countryData)
-      throw new NotFoundError(
-        masterCountry || country,
-        "country",
-        countries.map(({ country: _country }) => _country).join(" ")
-      );
     return countryData;
   }
   function getOldCountryData(country) {
@@ -138,7 +191,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
   function getNewCountryData(country) {
     return getCountryData(country, newCountries);
   }
-  function mergeDatas(oldFiles, newFiles) {
+  function mergeDatas(oldFiles, newFiles, resolve) {
     const { country } = oldFiles;
     const logSingleCountry = logSingleF();
     return oldFiles.data.map((fileData) => {
@@ -159,6 +212,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
         },
         newContent
       );
+      if (!ignoreLog) progress.increment(1, { country, fileName });
       return { ...fileData, content: resData };
     });
 
@@ -241,16 +295,6 @@ function makeLogger() {
   };
   const displayLog = () => logArray.forEach((item) => console.log(item));
   return { queueLog, displayLog };
-}
-
-function logSingleF() {
-  let logged = false;
-  return (value) => {
-    if (!logged) {
-      logged = true;
-      logValue += value + "\n ";
-    }
-  };
 }
 
 function stringify(value) {
