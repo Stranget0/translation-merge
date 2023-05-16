@@ -4,8 +4,56 @@ const yargs = require("yargs");
 const cliProgress = require("cli-progress");
 const colors = require("ansi-colors");
 
+const resolvers = {
+  add: {
+    description:
+      "Add new entries missing in source folder and apparent in target folder",
+    resolve(oldValue, comparerValue) {
+      if (!oldValue && comparerValue) return comparerValue;
+      return oldValue;
+    },
+  },
+  filter: {
+    description: 'filter out deleted or empty or "" entries',
+    resolve(oldValue, comparerValue) {
+      if (isNotNullish(comparerValue)) return oldValue;
+      return null;
+    },
+  },
+  sync: {
+    description:
+      "add missing entries and remove deleted and only deleted entries",
+    resolve(oldValue, comparerValue) {
+      if (comparerValue === null || comparerValue === undefined) return null;
+      if (comparerValue && !oldValue) return comparerValue;
+      return oldValue;
+    },
+  },
+  diff: {
+    description: "put out only differences between source and target",
+    resolve(oldValue, comparerValue) {
+      if (comparerValue && comparerValue !== oldValue) return comparerValue;
+      return null;
+    },
+  },
+  combine: {
+    description:
+      "compare the us locales of source and target and if changed replace these entries in us and other languages with target english entry",
+    resolve(oldValue, comparerValue) {
+      if (comparerValue) return comparerValue;
+      return oldValue;
+    },
+  },
+};
+
 const options = yargs
-  .usage("-s path/to/locales")
+  .usage("node . -r [resolver] [other options]")
+  .option("r", {
+    alias: "resolver",
+    choices: Object.keys(resolvers),
+    describe: "Resolver to use",
+    demandOption: true,
+  })
   .option("s", {
     alias: "source",
     describe: "path to old locales folder",
@@ -13,13 +61,25 @@ const options = yargs
   })
   .option("t", {
     alias: "target",
-    describe: "path to new locales folder",
+    describe: `path to new locales folder. Can be the same as source folder to self compare it with -c option country\n\n options: ${Object.entries(
+      resolvers
+    ).reduce(
+      (acc, [resolver, { description }]) =>
+        `${acc}${resolver}: ${description}\n\n`,
+      ""
+    )}`,
     default: "newLocales",
   })
   .option("o", {
     alias: "output",
-    describe: "path to the output folder",
+    describe:
+      "path to the output folder. Can be the same as source folder to override it",
     default: "resultLocales",
+  })
+  .option("c", {
+    alias: "masterCountry",
+    describe:
+      "country from new locales to always use when comparing with old values. Has no effect for combine resolver",
   }).argv;
 
 const sourceParam = path.resolve(options.source) + "\\";
@@ -41,35 +101,6 @@ main();
 
 let logValue = "";
 let ignoreLog = false;
-
-const resolvers = {
-  mergeResolve(oldValue, comparerValue) {
-    let result = comparerValue;
-    if (!comparerValue) result = oldValue;
-    return result;
-  },
-  addResolve(oldValue, comparerValue) {
-    if (!oldValue && comparerValue) return comparerValue;
-    return oldValue;
-  },
-  syncResolve(oldValue, comparerValue) {
-    if (comparerValue === null || comparerValue === undefined) return null;
-    if (comparerValue && !oldValue) return comparerValue;
-    return oldValue;
-  },
-  filterResolve(oldValue, comparerValue) {
-    if (isNotNullish(comparerValue)) return oldValue;
-    return null;
-  },
-  diffResolve(oldValue, comparerValue) {
-    if (comparerValue && comparerValue !== oldValue) return comparerValue;
-    return null;
-  },
-  combineResolve(oldValue, comparerValue) {
-    if (comparerValue) return comparerValue;
-    return oldValue;
-  },
-};
 
 // #region OPTIONS
 
@@ -110,7 +141,7 @@ async function main() {
     oldCountries,
     newCountries,
     // Change this to use a different resolver
-    resolvers.combineResolve,
+    resolvers[options.resolver].resolve,
     filesCount
   );
   await saveLocales(newData, resultParam);
@@ -170,7 +201,7 @@ async function parseLocales(source, target) {
 
 async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
   let usDiffMemo = null;
-  const isCombined = resolve === resolvers.combineResolve;
+  const isCombined = resolve === resolvers.combine.resolve;
   return transformCountries();
 
   function getUsDiff() {
@@ -179,7 +210,7 @@ async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
     const oldUs = getCountryData("us", oldCountries);
     const newUs = getCountryData("us", newCountries);
     if (!oldUs || !newUs) throw new Error("Couldn't find us locale");
-    const diffUs = mergeDatas(oldUs, newUs, resolvers.diffResolve);
+    const diffUs = mergeDatas(oldUs, newUs, resolvers.diff.resolve);
     usDiffMemo = diffUs;
     ignoreLog = false;
     return diffUs;
@@ -190,7 +221,7 @@ async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
     const resData = oldCountries.map((oldData) => {
       const newData = isCombined
         ? { ...oldData, data: getUsDiff() }
-        : getNewCountryData(oldData.country);
+        : getNewCountryData(options.masterCountry || oldData.country);
 
       if (!newData) return oldData;
       const mergedData = mergeDatas(oldData, newData, resolve);
