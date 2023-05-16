@@ -1,10 +1,31 @@
 const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
+const path = require("path");
+const yargs = require("yargs");
 const cliProgress = require("cli-progress");
 const colors = require("ansi-colors");
 
-const sourceParam = `./${process.argv[2] || "locales"}/`;
-const targetParam = `./${process.argv[3] || "targetLocales"}/`;
-const resultParam = `./${process.argv[4] || "resultLocales"}/`;
+const options = yargs
+  .usage("-s path/to/locales")
+  .option("s", {
+    alias: "source",
+    describe: "path to old locales folder",
+    default: "locales",
+  })
+  .option("t", {
+    alias: "target",
+    describe: "path to new locales folder",
+    default: "newLocales",
+  })
+  .option("o", {
+    alias: "output",
+    describe: "path to the output folder",
+    default: "resultLocales",
+  }).argv;
+
+const sourceParam = path.resolve(options.source) + "\\";
+const targetParam = path.resolve(options.target) + "\\";
+const resultParam = path.resolve(options.output) + "\\";
+
 const { displayLog, queueLog } = makeLogger();
 
 const progress = new cliProgress.SingleBar({
@@ -15,6 +36,7 @@ const progress = new cliProgress.SingleBar({
   barIncompleteChar: "\u2591",
   hideCursor: true,
 });
+
 main();
 
 let logValue = "";
@@ -50,7 +72,6 @@ const resolvers = {
 };
 
 // #region OPTIONS
-const masterCountry = null;
 
 const sibsToSort = [
   /challenge_/,
