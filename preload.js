@@ -71,7 +71,6 @@ function initializeResolvers(options) {
     const value = selectNode.value;
 
     options.resolver = resolvers[value];
-    console.log(value);
     selectNode.parentNode.parentNode.querySelector(".description").textContent =
       options.resolver.description;
   });
