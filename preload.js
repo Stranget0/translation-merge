@@ -5,6 +5,7 @@ const path = require("path");
 window.addEventListener("DOMContentLoaded", () => {
   const submitButton = document.querySelector("button[type=submit]");
   const logSection = document.querySelector(".log");
+  const usMasterCheckbox = document.querySelector("#master-country");
 
   const displayLogContent = (logText) => {
     while (logSection.hasChildNodes())
@@ -31,6 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   initializeResolvers(options);
+  initializeUsMasterCheckbox(usMasterCheckbox, options);
 
   pathInput("source", options);
   pathInput("target", options);
@@ -42,12 +44,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (!options.resolver) throw new Error("No resolver selected");
-
       await processLocales(
         options.sourcePath + "\\",
         options.targetPath + "\\",
         options.outputPath + "\\",
         options.resolver.resolve,
+        options.masterCountry,
         displayLogContent
       );
     } catch (e) {
@@ -58,14 +60,18 @@ window.addEventListener("DOMContentLoaded", () => {
     submitButton.disabled = false;
   });
 });
-
+function initializeUsMasterCheckbox(usMasterCheckbox, options) {
+  usMasterCheckbox.addEventListener("change", (e) => {
+    options.masterCountry = e.currentTarget.checked ? "us" : undefined;
+  });
+}
 function initializeResolvers(options) {
   setResolversOptions().addEventListener("change", (e) => {
     const selectNode = e.target;
     const value = selectNode.value;
 
     options.resolver = resolvers[value];
-
+    console.log(value);
     selectNode.parentNode.parentNode.querySelector(".description").textContent =
       options.resolver.description;
   });
@@ -164,8 +170,10 @@ async function processLocales(
   targetParam,
   resultParam,
   selectedResolver,
+  masterCountry,
   handleLog
 ) {
+  logValue = "";
   const { oldCountries, newCountries } = await parseLocales(
     sourceParam,
     targetParam
@@ -173,7 +181,8 @@ async function processLocales(
   const newData = await mergeLocales(
     oldCountries,
     newCountries,
-    selectedResolver
+    selectedResolver,
+    masterCountry
   );
   await saveLocales(newData, resultParam);
   console.log(logValue);
@@ -224,7 +233,12 @@ async function parseLocales(source, target) {
   return { oldCountries: oldContent, newCountries: newContent };
 }
 
-async function mergeLocales(oldCountries, newCountries, resolve) {
+async function mergeLocales(
+  oldCountries,
+  newCountries,
+  resolve,
+  masterCountry
+) {
   let usDiffMemo = null;
   const isCombined = resolve === resolvers.combine.resolve;
   return transformCountries();
@@ -245,7 +259,7 @@ async function mergeLocales(oldCountries, newCountries, resolve) {
     const resData = oldCountries.map((oldData) => {
       const newData = isCombined
         ? { ...oldData, data: getUsDiff() }
-        : getNewCountryData(options.masterCountry || oldData.country);
+        : getNewCountryData(masterCountry || oldData.country);
 
       if (!newData) return oldData;
       const mergedData = mergeDatas(oldData, newData, resolve);
