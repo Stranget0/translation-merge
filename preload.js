@@ -84,6 +84,7 @@ function pathInput(type, options) {
 
   inputNode.addEventListener("click", async () => {
     const newValue = await ipcRenderer.invoke("folder:open", type);
+    if (!newValue) return;
 
     options[`${type}Path`] = newValue;
     valueNode.textContent = newValue;
