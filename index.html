@@ -14,6 +14,11 @@
 			font-size: 1.5rem;
 		}
 
+		*,*::after, *::before{
+			margin: 0;
+			box-sizing: border-box;
+		}
+
 		body {
 			background-color: var(--color-bg);
 			color: var(--color-primary);
@@ -25,6 +30,7 @@
 
 			display: grid;
 			place-items: center;
+			overflow: hidden;
 		}
 
 		main {
@@ -67,6 +73,11 @@
 			background-color: var(--color-accent);
 		}
 
+		button[disabled]{
+			opacity: .5;
+			background-color: var(--color-primary);
+		}
+
 		select {
 			border-radius: 1rem;
 			padding: 0.25rem;
@@ -74,6 +85,18 @@
 
 		option {
 			text-align: center;
+		}
+		
+
+		hr{
+			opacity: .1;
+		}
+
+		.h-full{
+			height: 100%;
+		}
+		.w-full{
+			width: 100%;
 		}
 
 		.flex,
@@ -99,21 +122,20 @@
 			display: grid;
 			grid-template-columns: 1fr 1fr;
 			width: 100%;
-			justify-items: space-between;
+			justify-content: space-between;
 			align-content: center;
 		}
 
-		.gap {
+		.gap, .input, .two-col {
 			gap: .5em;
 		}
 
 		.input {
 			justify-content: center;
-			gap: 0.5rem;
-
 			color: var(--color-accent);
 		}
-		.input label, button{
+
+		.input label, button {
 			text-transform: uppercase;
 		}
 		.input :is(select, input, textarea, option) {
@@ -155,22 +177,51 @@
 			aspect-ratio: 1/1;
 			justify-self: flex-end;
 		}
+
+		.main-section{
+			align-items: center;
+			width: 100%;
+			max-height: 80%;
+		}
+
+		section.log{
+			background-color: #000000aa;
+			color: var(--color-primary);
+			border-radius: 2rem;
+			padding: 2rem;
+			text-align: left;
+			overflow: auto;
+			font-size: .5rem;
+			max-height: 50%;
+			flex-grow: 1;
+		}
+
+		
+		.yellow {
+			color: var(--color-accent);
+		}
+
+		.error{
+			font-weight: 700;
+			color: red;
+		}
 	</style>
 </head>
 
 <body>
-	<main>
-		<section class="two-col">
-			<section class="col gap">
+	<main class="h-full w-full">
+		<section class="row h-full main-section">
+			<section class="col gap w-full">
 				<div class="input two-col">
 					<div class="col">
-						<label for="resolvers">merge method</label>
+						<label for="resolvers">merge method <span class="error">*</span></label>
 						<select id="resolvers">
 							<option disabled selected value> -- select an option -- </option>
 						</select>
 					</div>
 					<p class="description"></p>
 				</div>
+				<hr/>
 				<div class="input two-col">
 					<button id="source-button" name="source-button">source folder</button>
 					<div class="col">
@@ -193,6 +244,7 @@
 						<div class="description">where to put <mark>generated files</mark>. <em>Can be the same as source folder to override it.</em></div>
 					</div>
 				</div>
+				<hr/>
 				<div class="two-col input checkbox">
 					<input type="checkbox" id="master-country"></input>
 					<div class="label">
@@ -202,6 +254,7 @@
 					</div>
 				</div>
 			</section>
+			<section class="log h-full w-full" id="log"></section>
 		</section>
 		<button type="submit">process files</button>
 	</main>

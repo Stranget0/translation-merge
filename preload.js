@@ -3,6 +3,25 @@ const { ipcRenderer } = require("electron");
 const path = require("path");
 
 window.addEventListener("DOMContentLoaded", () => {
+  const submitButton = document.querySelector("button[type=submit]");
+  const logSection = document.querySelector(".log");
+  const displayLogContent = (logText) => {
+    while (logSection.hasChildNodes())
+      logSection.removeChild(logSection.firstChild);
+
+    const logFrag = document.createDocumentFragment();
+    logText.split("\n").forEach((line) => {
+      const preLine = document.createElement("pre");
+      preLine.textContent = line;
+      logFrag.appendChild(preLine);
+
+      if (/^(Type)?Error/.test(line)) preLine.classList.add("error");
+      else if (line.length < 4 || line.trim()[0] === ".")
+        preLine.classList.add("yellow");
+    });
+    logSection.appendChild(logFrag);
+  };
+
   const options = {
     resolver: null,
     sourcePath: path.resolve(__dirname, "./locales"),
@@ -10,6 +29,36 @@ window.addEventListener("DOMContentLoaded", () => {
     outputPath: path.resolve(__dirname, "./resultLocales"),
   };
 
+  initializeResolvers(options);
+
+  pathInput("source", options);
+  pathInput("target", options);
+  pathInput("output", options);
+
+  submitButton.addEventListener("click", async () => {
+    displayLogContent("PROCESSING");
+    submitButton.disabled = true;
+
+    try {
+      if (!options.resolver) throw new Error("No resolver selected");
+
+      await processLocales(
+        options.sourcePath + "\\",
+        options.targetPath + "\\",
+        options.outputPath + "\\",
+        options.resolver.resolve,
+        displayLogContent
+      );
+    } catch (e) {
+      console.error(e);
+      displayLogContent(`${e}`);
+    }
+
+    submitButton.disabled = false;
+  });
+});
+
+function initializeResolvers(options) {
   setResolversOptions().addEventListener("change", (e) => {
     const selectNode = e.target;
     const value = selectNode.value;
@@ -19,11 +68,7 @@ window.addEventListener("DOMContentLoaded", () => {
     selectNode.parentNode.parentNode.querySelector(".description").textContent =
       options.resolver.description;
   });
-
-  pathInput("source", options);
-  pathInput("target", options);
-  pathInput("output", options);
-});
+}
 
 function pathInput(type, options) {
   const inputNode = document.querySelector(`button#${type}-button`);
@@ -37,10 +82,6 @@ function pathInput(type, options) {
     valueNode.textContent = newValue;
   });
 }
-
-// const path = require("path");
-// const cliProgress = require("cli-progress");
-// const colors = require("ansi-colors");
 
 const resolvers = {
   add: {
@@ -84,46 +125,6 @@ const resolvers = {
   },
 };
 
-// const options = yargs
-//   .usage("node . -r [resolver] [other options]")
-//   .option("r", {
-//     alias: "resolver",
-//     choices: Object.keys(resolvers),
-//     describe: "Resolver to use",
-//     demandOption: true,
-//   })
-//   .option("s", {
-//     alias: "source",
-//     describe: "path to old locales folder",
-//     default: "locales",
-//   })
-//   .option("t", {
-//     alias: "target",
-//     describe: `path to new locales folder. Can be the same as source folder to self compare it with -c option country\n\n options: ${Object.entries(
-//       resolvers
-//     ).reduce(
-//       (acc, [resolver, { description }]) =>
-//         `${acc}${resolver}: ${description}\n\n`,
-//       ""
-//     )}`,
-//     default: "newLocales",
-//   })
-//   .option("o", {
-//     alias: "output",
-//     describe:
-//       "path to the output folder. Can be the same as source folder to override it",
-//     default: "resultLocales",
-//   })
-//   .option("c", {
-//     alias: "masterCountry",
-//     describe:
-//       "country from new locales to always use when comparing with old values. Has no effect for combine resolver",
-//   }).argv;
-
-// const sourceParam = path.resolve(options.source) + "\\";
-// const targetParam = path.resolve(options.target) + "\\";
-// const resultParam = path.resolve(options.output) + "\\";
-
 let logValue = "";
 let ignoreLog = false;
 
@@ -157,7 +158,13 @@ const fileNameReg = /.json$/i;
 //#endregion
 
 // BEGINNING OF ALGORITHM
-async function main(sourceParam, targetParam, resultParam) {
+async function processLocales(
+  sourceParam,
+  targetParam,
+  resultParam,
+  selectedResolver,
+  handleLog
+) {
   const { oldCountries, newCountries, filesCount } = await parseLocales(
     sourceParam,
     targetParam
@@ -165,14 +172,13 @@ async function main(sourceParam, targetParam, resultParam) {
   const newData = await mergeLocales(
     oldCountries,
     newCountries,
-    // Change this to use a different resolver
-    resolvers[options.resolver].resolve,
+    selectedResolver,
     filesCount
   );
   await saveLocales(newData, resultParam);
   console.log(logValue);
+  handleLog?.(logValue);
   await writeFile("log.yaml", logValue);
-  // displayLog();
 }
 
 async function parseLocales(source, target) {
