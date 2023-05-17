@@ -1,13 +1,10 @@
 # Translation merge
 
+This app is used to mix translation json files structured in a ./[language]/[file].json fashion.
+It has different resolvers that define the outcome of the merge.
+
 ## How to use
 
-`node index.js` for default params
+`npm start` to start electron app
 
-or...
-
-`node index.js customLocalesFolder customTargetFolder customResultFolder`
-
-directories in `targetLocales` folder have to be superset of folders in `locales`
-
-the same applies to files in each directory
+`npm run package` to package the app
