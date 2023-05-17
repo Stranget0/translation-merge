@@ -1,5 +1,5 @@
 const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
-const { dialog } = require("electron");
+const { ipcRenderer } = require("electron");
 const path = require("path");
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -31,13 +31,10 @@ function pathInput(type, options) {
   valueNode.textContent = options[`${type}Path`];
 
   inputNode.addEventListener("click", async () => {
-    dialog.showOpenDialog({
-      message: `Select ${type} path`,
-      properties: ["openDirectory"],
-    });
+    const newValue = await ipcRenderer.invoke("folder:open", type);
 
     options[`${type}Path`] = newValue;
-    valueNode.textContent = value;
+    valueNode.textContent = newValue;
   });
 }
 

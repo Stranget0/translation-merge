@@ -1,7 +1,10 @@
 const path = require("path");
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+
+console.log(dialog);
 
 app.whenReady().then(() => {
+  ipcMain.handle("folder:open", handleFolderOpen);
   createWindow();
 
   app.on("activate", () => {
@@ -31,4 +34,14 @@ async function createWindow() {
   });
 
   win.loadFile("index.html");
+}
+async function handleFolderOpen(event, type = "folder") {
+  const { filePaths, canceled } = await dialog.showOpenDialog({
+    message: `Select ${type} path`,
+    properties: ["openDirectory"],
+  });
+
+  if (canceled) return null;
+
+  return filePaths[0];
 }
