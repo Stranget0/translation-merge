@@ -1,21 +1,22 @@
 {
-  "name": "translate",
+  "name": "json-translation-tool",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron main"
+    "start": "electron main",
+    "package": "electron-forge package"
   },
   "author": "Marcin Smarzewski",
   "license": "ISC",
   "dependencies": {
     "ansi-colors": "^4.1.3",
     "cli-progress": "^3.12.0",
-    "electron": "^24.3.0",
     "yargs": "13.2"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.1.1"
+    "@electron-forge/cli": "^6.1.1",
+    "electron": "^24.3.0"
   }
 }
