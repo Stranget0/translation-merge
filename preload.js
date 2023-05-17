@@ -1,9 +1,22 @@
 const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
+const { dialog } = require("electron");
 
 window.addEventListener("DOMContentLoaded", () => {
+  const options = {
+    resolver: null,
+  };
+
   setUsedVersions();
 
-  setResolversOptions();
+  setResolversOptions().addEventListener("change", (e) => {
+    const selectNode = e.target;
+    const value = selectNode.value;
+
+    options.resolver = resolvers[value];
+
+    selectNode.parentNode.parentNode.querySelector(".description").textContent =
+      options.resolver.description;
+  });
 });
 
 function setUsedVersions() {
@@ -373,6 +386,7 @@ function setResolversOptions() {
   const selectResolve = document.querySelector("select#resolvers");
 
   selectResolve.append(createResolveOptions());
+  return selectResolve;
 }
 
 function createResolveOptions() {
