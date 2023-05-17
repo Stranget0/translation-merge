@@ -35,9 +35,7 @@
 			margin-top: 1rem;
 		}
 
-		b,
-		mark,
-		i,
+		b,strong,
 		h1,
 		h2,
 		h3,
@@ -45,6 +43,15 @@
 		h5,
 		h6 {
 			color: var(--color-accent);
+		}
+
+		mark{
+			color: var(--color-accent);
+			background-color: var(--color-bg);
+		}
+
+		i,em{
+			opacity: .5;
 		}
 
 		button {
@@ -106,7 +113,9 @@
 
 			color: var(--color-accent);
 		}
-
+		.input label, button{
+			text-transform: uppercase;
+		}
 		.input :is(select, input, textarea, option) {
 			color: var(--color-accent);
 			background-color: var(--color-bg);
@@ -166,30 +175,30 @@
 					<button id="source-button" name="source-button">source folder</button>
 					<div class="col">
 						<div class="path" id="source-path"></div>
-						<div class="description">path to source/old locales folder</div>
+						<div class="description">path to <mark>source/old locales</mark> folder.</div>
 					</div>
 				</div>
 				<div class="input two-col">
 					<button id="target-button" name="target-button">target folder</button>
 					<div class="col">
 						<div class="path" id="target-path"></div>
-						<div class="description">path to target/new locales folder. Can be the same as source folder to self compare
-							it with us master country option checked</div>
+						<div class="description">path to <mark>target/new locales</mark> folder. <em>Can be the same as source folder to self compare
+							it with us master country option checked.</em></div>
 					</div>
 				</div>
 				<div class="input two-col">
 					<button id="output-button" name="output-button">output folder</button>
 					<div class="col">
 						<div class="path" id="output-path"></div>
-						<div class="description">where to put generated files. Can be the same as source folder to override it</div>
+						<div class="description">where to put <mark>generated files</mark>. <em>Can be the same as source folder to override it.</em></div>
 					</div>
 				</div>
 				<div class="two-col input checkbox">
 					<input type="checkbox" id="master-country"></input>
 					<div class="label">
 						<label for="master-country">use US as master country</label>
-						<p class="description">country from new locales to always use when comparing with old values. Has no
-							effect for combine resolver</p>
+						<p class="description">country from <mark>target locales</mark> to always use when comparing with old values. Has no
+							effect for combine resolver.</p>
 					</div>
 				</div>
 			</section>
