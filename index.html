@@ -120,11 +120,18 @@
 			border: 1px solid var(--color-accent);
 		}
 
+		.input :is(.description, .path) {
+			text-align: left;
+		}
+
 		.input .description {
 			font-size: 0.5rem;
 			color: var(--color-primary);
 			opacity: 0.5;
-			text-align: left;
+		}
+
+		.input .path {
+			font-size: .75rem;
 		}
 
 		.checkbox {
@@ -137,6 +144,7 @@
 		.checkbox input {
 			width: 2rem;
 			aspect-ratio: 1/1;
+			justify-self: flex-end;
 		}
 	</style>
 </head>
@@ -155,34 +163,33 @@
 					<p class="description"></p>
 				</div>
 				<div class="input two-col">
-					<button>source folder</button>
-					<div class="row">
-						<div id="source-path"></div>
+					<button id="source-button" name="source-button">source folder</button>
+					<div class="col">
+						<div class="path" id="source-path"></div>
 						<div class="description">path to source/old locales folder</div>
 					</div>
 				</div>
 				<div class="input two-col">
-					<button>target folder</button>
-					<div class="row">
-						<div id="target-path"></div>
-						<div class="description">path to target/new locales folder. Can be the same as source folder to self compare it with us master country option checked</div>
+					<button id="target-button" name="target-button">target folder</button>
+					<div class="col">
+						<div class="path" id="target-path"></div>
+						<div class="description">path to target/new locales folder. Can be the same as source folder to self compare
+							it with us master country option checked</div>
 					</div>
 				</div>
 				<div class="input two-col">
-					<button>output folder</button>
-					<div class="row">
-						<div id="output-path"></div>
+					<button id="output-button" name="output-button">output folder</button>
+					<div class="col">
+						<div class="path" id="output-path"></div>
 						<div class="description">where to put generated files. Can be the same as source folder to override it</div>
 					</div>
 				</div>
-				<div class="two-col">
-					<div class="input checkbox row">
-						<input type="checkbox" id="master-country"></input>
-						<div class="label">
-							<label for="master-country">use US as master country</label>
-							<p class="description">country from new locales to always use when comparing with old values. Has no
-								effect for combine resolver</p>
-						</div>
+				<div class="two-col input checkbox">
+					<input type="checkbox" id="master-country"></input>
+					<div class="label">
+						<label for="master-country">use US as master country</label>
+						<p class="description">country from new locales to always use when comparing with old values. Has no
+							effect for combine resolver</p>
 					</div>
 				</div>
 			</section>

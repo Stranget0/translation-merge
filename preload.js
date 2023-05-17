@@ -1,12 +1,14 @@
 const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
 const { dialog } = require("electron");
+const path = require("path");
 
 window.addEventListener("DOMContentLoaded", () => {
   const options = {
     resolver: null,
+    sourcePath: path.resolve(__dirname, "./locales"),
+    targetPath: path.resolve(__dirname, "./newLocales"),
+    outputPath: path.resolve(__dirname, "./resultLocales"),
   };
-
-  setUsedVersions();
 
   setResolversOptions().addEventListener("change", (e) => {
     const selectNode = e.target;
@@ -17,17 +19,26 @@ window.addEventListener("DOMContentLoaded", () => {
     selectNode.parentNode.parentNode.querySelector(".description").textContent =
       options.resolver.description;
   });
+
+  pathInput("source", options);
+  pathInput("target", options);
+  pathInput("output", options);
 });
 
-function setUsedVersions() {
-  const replaceText = (selector, text) => {
-    const element = document.getElementById(selector);
-    if (element) element.innerText = text;
-  };
+function pathInput(type, options) {
+  const inputNode = document.querySelector(`button#${type}-button`);
+  const valueNode = document.querySelector(`#${type}-path`);
+  valueNode.textContent = options[`${type}Path`];
 
-  for (const dependency of ["chrome", "node", "electron"]) {
-    replaceText(`${dependency}-version`, process.versions[dependency]);
-  }
+  inputNode.addEventListener("click", async () => {
+    dialog.showOpenDialog({
+      message: `Select ${type} path`,
+      properties: ["openDirectory"],
+    });
+
+    options[`${type}Path`] = newValue;
+    valueNode.textContent = value;
+  });
 }
 
 // const path = require("path");
