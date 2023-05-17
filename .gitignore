@@ -2,3 +2,4 @@
 log.yaml
 node_modules
 out
+.env
