@@ -14,7 +14,9 @@
 			font-size: 1.5rem;
 		}
 
-		*,*::after, *::before{
+		*,
+		*::after,
+		*::before {
 			margin: 0;
 			box-sizing: border-box;
 		}
@@ -41,7 +43,8 @@
 			margin-top: 1rem;
 		}
 
-		b,strong,
+		b,
+		strong,
 		h1,
 		h2,
 		h3,
@@ -51,12 +54,13 @@
 			color: var(--color-accent);
 		}
 
-		mark{
+		mark {
 			color: var(--color-accent);
 			background-color: var(--color-bg);
 		}
 
-		i,em{
+		i,
+		em {
 			opacity: .5;
 		}
 
@@ -73,7 +77,7 @@
 			background-color: var(--color-accent);
 		}
 
-		button[disabled]{
+		button[disabled] {
 			opacity: .5;
 			background-color: var(--color-primary);
 		}
@@ -86,16 +90,17 @@
 		option {
 			text-align: center;
 		}
-		
 
-		hr{
+
+		hr {
 			opacity: .1;
 		}
 
-		.h-full{
+		.h-full {
 			height: 100%;
 		}
-		.w-full{
+
+		.w-full {
 			width: 100%;
 		}
 
@@ -126,7 +131,9 @@
 			align-content: center;
 		}
 
-		.gap, .input, .two-col {
+		.gap,
+		.input,
+		.two-col {
 			gap: .5em;
 		}
 
@@ -135,9 +142,11 @@
 			color: var(--color-accent);
 		}
 
-		.input label, button {
+		.input label,
+		button {
 			text-transform: uppercase;
 		}
+
 		.input :is(select, input, textarea, option) {
 			color: var(--color-accent);
 			background-color: var(--color-bg);
@@ -178,13 +187,13 @@
 			justify-self: flex-end;
 		}
 
-		.main-section{
+		.main-section {
 			align-items: center;
 			width: 100%;
 			max-height: 80%;
 		}
 
-		section.log{
+		section.log {
 			background-color: #000000aa;
 			color: var(--color-primary);
 			border-radius: 2rem;
@@ -196,12 +205,12 @@
 			flex-grow: 1;
 		}
 
-		
+
 		.yellow {
 			color: var(--color-accent);
 		}
 
-		.error{
+		.error {
 			font-weight: 700;
 			color: red;
 		}
@@ -221,7 +230,7 @@
 					</div>
 					<p class="description"></p>
 				</div>
-				<hr/>
+				<hr />
 				<div class="input two-col">
 					<button id="source-button" name="source-button">source folder</button>
 					<div class="col">
@@ -233,30 +242,35 @@
 					<button id="target-button" name="target-button">target folder</button>
 					<div class="col">
 						<div class="path" id="target-path"></div>
-						<div class="description">path to <mark>target/new locales</mark> folder. <em>Can be the same as source folder to self compare
-							it with us master country option checked.</em></div>
+						<div class="description">path to <mark>target/new locales</mark> folder. <em>Can be the same as source
+								folder to self compare
+								it with us master country option checked.</em></div>
 					</div>
 				</div>
 				<div class="input two-col">
 					<button id="output-button" name="output-button">output folder</button>
 					<div class="col">
 						<div class="path" id="output-path"></div>
-						<div class="description">where to put <mark>generated files</mark>. <em>Can be the same as source folder to override it.</em></div>
+						<div class="description">where to put <mark>generated files</mark>. <em>Can be the same as source folder to
+								override it.</em></div>
 					</div>
 				</div>
-				<hr/>
+				<hr />
 				<div class="two-col input checkbox">
 					<input type="checkbox" id="master-country"></input>
 					<div class="label">
 						<label for="master-country">use US as master country</label>
-						<p class="description">country from <mark>target locales</mark> to always use when comparing with old values. Has no
-							effect for combine resolver.</p>
+						<p class="description">Country from <mark>target locales</mark> to always use when comparing with
+							<mark>source</mark> values.</p>
+						<p class="description">Has no effect for combine resolver.</p>
 					</div>
 				</div>
 			</section>
 			<section class="log h-full w-full" id="log"></section>
 		</section>
-		<button type="submit">process files</button>
+		<button type="submit">
+			process files
+		</button>
 	</main>
 </body>
 

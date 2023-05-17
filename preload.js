@@ -5,6 +5,7 @@ const path = require("path");
 window.addEventListener("DOMContentLoaded", () => {
   const submitButton = document.querySelector("button[type=submit]");
   const logSection = document.querySelector(".log");
+
   const displayLogContent = (logText) => {
     while (logSection.hasChildNodes())
       logSection.removeChild(logSection.firstChild);
@@ -15,7 +16,7 @@ window.addEventListener("DOMContentLoaded", () => {
       preLine.textContent = line;
       logFrag.appendChild(preLine);
 
-      if (/^(Type)?Error/.test(line)) preLine.classList.add("error");
+      if (/^[a-zA-Z]*Error/.test(line)) preLine.classList.add("error");
       else if (line.length < 4 || line.trim()[0] === ".")
         preLine.classList.add("yellow");
     });
@@ -165,15 +166,14 @@ async function processLocales(
   selectedResolver,
   handleLog
 ) {
-  const { oldCountries, newCountries, filesCount } = await parseLocales(
+  const { oldCountries, newCountries } = await parseLocales(
     sourceParam,
     targetParam
   );
   const newData = await mergeLocales(
     oldCountries,
     newCountries,
-    selectedResolver,
-    filesCount
+    selectedResolver
   );
   await saveLocales(newData, resultParam);
   console.log(logValue);
@@ -221,16 +221,10 @@ async function parseLocales(source, target) {
     makeLangObj(target, newFiles),
   ]);
 
-  const filesCount = countFilesCount(oldContent);
-
-  return { oldCountries: oldContent, newCountries: newContent, filesCount };
-
-  function countFilesCount(countries) {
-    return countries.reduce((acc, { data }) => data.length + acc, 0);
-  }
+  return { oldCountries: oldContent, newCountries: newContent };
 }
 
-async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
+async function mergeLocales(oldCountries, newCountries, resolve) {
   let usDiffMemo = null;
   const isCombined = resolve === resolvers.combine.resolve;
   return transformCountries();
@@ -248,7 +242,6 @@ async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
   }
 
   function transformCountries() {
-    // progress.start(filesCount, 0, { country: "locales", fileName: "" });
     const resData = oldCountries.map((oldData) => {
       const newData = isCombined
         ? { ...oldData, data: getUsDiff() }
@@ -258,7 +251,6 @@ async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
       const mergedData = mergeDatas(oldData, newData, resolve);
       return { ...oldData, data: mergedData };
     });
-    // progress.stop();
     return resData;
   }
 
@@ -295,7 +287,6 @@ async function mergeLocales(oldCountries, newCountries, resolve, filesCount) {
         },
         newContent
       );
-      // if (!ignoreLog) progress.increment(1, { country, fileName });
       return { ...fileData, content: resData };
     });
 
