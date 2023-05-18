@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tauri dev",
-    "build": "tauri build"
+    "build": "tauri build",
+    "tauri": "tauri"
   },
   "author": "Marcin Smarzewski",
   "license": "ISC",
