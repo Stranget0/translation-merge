@@ -1,34 +1,41 @@
-const { readdir, readFile, mkdir, writeFile } = require("fs/promises");
-const { ipcRenderer } = require("electron");
-const path = require("path");
+const { readDir, readTextFile, createDir, writeTextFile } = window.__TAURI__.fs;
+const { resolve } = window.__TAURI__.path;
+const { open: dialogOpen } = window.__TAURI__.dialog;
+const fileEntryToName = ({ name }) => name;
 
-window.addEventListener("DOMContentLoaded", () => {
-  const submitButton = document.querySelector("button[type=submit]");
-  const logSection = document.querySelector(".log");
-  const usMasterCheckbox = document.querySelector("#master-country");
+const submitButton = document.querySelector("button[type=submit]");
+const logSection = document.querySelector(".log");
+const usMasterCheckbox = document.querySelector("#master-country");
 
-  const displayLogContent = (logText) => {
-    while (logSection.hasChildNodes())
-      logSection.removeChild(logSection.firstChild);
+const displayLogContent = (logText) => {
+  while (logSection.hasChildNodes())
+    logSection.removeChild(logSection.firstChild);
 
-    const logFrag = document.createDocumentFragment();
-    logText.split("\n").forEach((line) => {
-      const preLine = document.createElement("pre");
-      preLine.textContent = line;
-      logFrag.appendChild(preLine);
+  const logFrag = document.createDocumentFragment();
+  logText.split("\n").forEach((line) => {
+    const preLine = document.createElement("pre");
+    preLine.textContent = line;
+    logFrag.appendChild(preLine);
 
-      if (/^[a-zA-Z]*Error/.test(line)) preLine.classList.add("error");
-      else if (line.length < 4 || line.trim()[0] === ".")
-        preLine.classList.add("yellow");
-    });
-    logSection.appendChild(logFrag);
-  };
+    if (/^[a-zA-Z]*Error/.test(line)) preLine.classList.add("error");
+    else if (line.length < 4 || line.trim()[0] === ".")
+      preLine.classList.add("yellow");
+  });
+  logSection.appendChild(logFrag);
+};
+
+(async () => {
+  const [sourcePath, targetPath, outputPath] = await Promise.all(
+    ["./locales", "./newLocales", "./resultLocales"].map((p) =>
+      resolve("./", p)
+    )
+  );
 
   const options = {
     resolver: null,
-    sourcePath: path.resolve(__dirname, "./locales"),
-    targetPath: path.resolve(__dirname, "./newLocales"),
-    outputPath: path.resolve(__dirname, "./resultLocales"),
+    sourcePath,
+    targetPath,
+    outputPath,
   };
 
   initializeResolvers(options);
@@ -59,7 +66,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     submitButton.disabled = false;
   });
-});
+})();
+
 function initializeUsMasterCheckbox(usMasterCheckbox, options) {
   usMasterCheckbox.addEventListener("change", (e) => {
     options.masterCountry = e.currentTarget.checked ? "us" : undefined;
@@ -82,7 +90,10 @@ function pathInput(type, options) {
   valueNode.textContent = options[`${type}Path`];
 
   inputNode.addEventListener("click", async () => {
-    const newValue = await ipcRenderer.invoke("folder:open", type);
+    const newValue = await dialogOpen({
+      directory: true,
+      title: `Select ${type} folder`,
+    });
     if (!newValue) return;
 
     options[`${type}Path`] = newValue;
@@ -185,19 +196,20 @@ async function processLocales(
     masterCountry
   );
   await saveLocales(newData, resultParam);
-  console.log(logValue);
   handleLog?.(logValue);
-  await writeFile("log.yaml", logValue);
 }
 
 async function parseLocales(source, target) {
   if (!source || !target) throw new Error("Not enough parameters provided!");
   const dirToCountryData = async (name, path) => {
     const jsonFilter = (fileName) => fileNameReg.test(fileName);
-    const files = (await readdir(path)).filter(jsonFilter);
+    const files = (await readDir(path)).map(fileEntryToName).filter(jsonFilter);
+
     const filePaths = files.map((f) => `${path}/${f}`);
-    const buffors = await Promise.all(filePaths.map((p) => readFile(p)));
-    const fileContents = buffors.map((b, i) => {
+    const stringContents = await Promise.all(
+      filePaths.map((p) => readTextFile(p))
+    );
+    const fileContents = stringContents.map((b, i) => {
       try {
         return JSON.parse(b.toString("utf8").trim());
       } catch (e) {
@@ -216,13 +228,14 @@ async function parseLocales(source, target) {
       data,
     };
   };
-  const makeLangObj = (path, files) =>
-    Promise.all(files.map((d) => dirToCountryData(d, path + d)));
+  const makeLangObj = (path, files) => {
+    console.log({ files });
+    return Promise.all(files.map((d) => dirToCountryData(d, path + d)));
+  };
 
-  if (!source || !target) throw new Error("Not enough parameters provided!");
   const [oldFiles, newFiles] = await Promise.all([
-    readdir(source),
-    readdir(target),
+    readDir(source).then((res) => res.map(fileEntryToName)),
+    readDir(target).then((res) => res.map(fileEntryToName)),
   ]);
 
   const [oldContent, newContent] = await Promise.all([
@@ -318,11 +331,11 @@ async function saveLocales(resCountries, destination) {
   resCountries.forEach(async (countryData) => {
     const { country, data } = countryData;
     const dest = destination + country;
-    await mkdir(dest, { recursive: true });
+    await createDir(dest, { recursive: true });
     data.forEach(({ file, content }) => {
       if (content !== undefined) {
         const fileContent = JSON.stringify(content, null, "\t");
-        writeFile(`${dest}/${file}`, fileContent);
+        writeTextFile(`${dest}/${file}`, fileContent);
       }
     });
   });
