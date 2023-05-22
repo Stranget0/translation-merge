@@ -128,9 +128,13 @@ const resolvers = {
   },
   diff: {
     description: "put out only differences between source and target",
-    resolve(oldValue, comparerValue) {
-      if (comparerValue && comparerValue !== oldValue) return comparerValue;
-      return null;
+    resolve(oldValue, comparerValue, objPath) {
+      let res;
+      if (comparerValue !== oldValue) res = comparerValue;
+      else res = null;
+      if (comparerValue === "NEW RECORD" || oldValue === "NEW RECORD")
+        console.log(objPath, comparerValue + "", oldValue + "", res + "");
+      return res;
     },
   },
   combine: {
@@ -229,7 +233,6 @@ async function parseLocales(source, target) {
     };
   };
   const makeLangObj = (path, files) => {
-    console.log({ files });
     return Promise.all(files.map((d) => dirToCountryData(d, path + d)));
   };
 
@@ -271,7 +274,7 @@ async function mergeLocales(
   function transformCountries() {
     const resData = oldCountries.map((oldData) => {
       const newData = isCombined
-        ? { ...oldData, data: getUsDiff() }
+        ? { ...oldData, country: "diff", data: getUsDiff() }
         : getNewCountryData(masterCountry || oldData.country);
 
       if (!newData) return oldData;
@@ -303,7 +306,11 @@ async function mergeLocales(
       const resData = deepObjectMap(
         oldContent,
         (oldValue, comparerValue, key, objPath) => {
-          const resValue = resolve(oldValue, comparerValue);
+          const resValue = resolve(
+            oldValue,
+            comparerValue,
+            `${fileName}${objPath}`
+          );
           if (oldValue !== resValue || trackedKeys.includes(key)) {
             logSingleCountry(country);
             logSingleFile(`\t${fileName}`);
@@ -358,6 +365,7 @@ function deepObjectMap(
     const extraEntries = Object.entries(extraCompareObject).filter(
       ([newKey]) => !entries.some(([key]) => newKey === key)
     );
+
     const mappedExtraEntries = deleteNullish(
       extraEntries.map(([key, value]) => [
         key,
@@ -366,7 +374,7 @@ function deepObjectMap(
     );
 
     const newEntries = deleteNullish(
-      [...entries, ...mappedExtraEntries].map(([key, value]) => {
+      entries.map(([key, value]) => {
         const newValue = deepObjectMap(
           value,
           mapFunc,
@@ -376,7 +384,8 @@ function deepObjectMap(
         );
         return [key, newValue];
       })
-    );
+    ).concat(mappedExtraEntries);
+
     if (
       sibsToSort &&
       newEntries.find(([key]) => sibsToSort.some((reg) => reg.test(key)))
