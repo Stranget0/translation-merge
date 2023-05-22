@@ -23,7 +23,7 @@ Adds missing values
 ### filter
 Removes “” or deleted values
 
-#### Master country
+## Master country
 Extra option to use when you want to for example add missing translations in other languages based on the master language.
 
 It forces the program to always compare old values with target’s master language values, such as US.
