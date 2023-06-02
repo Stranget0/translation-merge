@@ -129,12 +129,8 @@ const resolvers = {
   diff: {
     description: "put out only differences between source and target",
     resolve(oldValue, comparerValue, objPath) {
-      let res;
-      if (comparerValue !== oldValue) res = comparerValue;
-      else res = null;
-      if (comparerValue === "NEW RECORD" || oldValue === "NEW RECORD")
-        console.log(objPath, comparerValue + "", oldValue + "", res + "");
-      return res;
+      if (comparerValue !== oldValue) return comparerValue;
+      return null;
     },
   },
   combine: {
